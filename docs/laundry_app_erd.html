@@ -1,0 +1,173 @@
+
+<div id="erd"></div>
+<style>
+#erd svg { max-width: 100%; }
+</style>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+const { svg } = await mermaid.render('erd-svg', `erDiagram
+  Customer ||--o{ LaundryOrder : places
+  Customer ||--o{ BalanceTransaction : has
+  LaundryOrder ||--|{ OrderLine : contains
+  LaundryOrder ||--o{ Payment : receives
+  OrderLine }o--|| ServiceItem : "priced by"
+  ServiceItem }o--|| Service : "belongs to"
+  ServiceItem }o--|| Item : "belongs to"
+  AcJob ||--o{ Payment : receives
+  Expense }o--|| User : "recorded by"
+  LaundryOrder }o--|| User : "created by"
+  AcJob }o--|| User : "created by"
+
+  Customer {
+    uuid id PK
+    string name
+    string phone
+    string notes
+    int balance_paise
+    timestamp created_at
+    timestamp updated_at
+  }
+  LaundryOrder {
+    uuid id PK
+    string inv_no
+    uuid customer_id FK
+    uuid created_by FK
+    date order_date
+    date delivery_date
+    string status
+    int disc_pct
+    int disc_amt_paise
+    boolean paid
+    int paid_amount_paise
+    string notes
+    timestamp created_at
+    timestamp updated_at
+  }
+  OrderLine {
+    uuid id PK
+    uuid order_id FK
+    uuid service_item_id FK
+    int qty
+    int rate_paise
+    timestamp created_at
+  }
+  Service {
+    uuid id PK
+    string name
+    int gst_pct
+    boolean active
+    timestamp created_at
+  }
+  Item {
+    uuid id PK
+    string name
+    string unit
+    boolean active
+    timestamp created_at
+  }
+  ServiceItem {
+    uuid id PK
+    uuid service_id FK
+    uuid item_id FK
+    int rate_paise
+    boolean active
+    timestamp updated_at
+  }
+  Payment {
+    uuid id PK
+    uuid order_id FK
+    uuid ac_job_id FK
+    int amount_paise
+    string mode
+    string reference
+    timestamp paid_at
+    uuid recorded_by FK
+  }
+  BalanceTransaction {
+    uuid id PK
+    uuid customer_id FK
+    int delta_paise
+    string reason
+    uuid reference_id
+    string reference_type
+    timestamp created_at
+  }
+  AcJob {
+    uuid id PK
+    string inv_no
+    string cust_name
+    string cust_phone
+    string cust_address
+    string technician
+    string category
+    string status
+    int qty
+    int rate_paise
+    int disc_pct
+    int gst_pct
+    boolean paid
+    uuid created_by FK
+    date job_date
+    string notes
+    timestamp created_at
+    timestamp updated_at
+  }
+  Expense {
+    uuid id PK
+    date expense_date
+    string category
+    string dept
+    string description
+    int amount_paise
+    string pay_mode
+    uuid recorded_by FK
+    timestamp created_at
+  }
+  User {
+    uuid id PK
+    string name
+    string email
+    string password_hash
+    string role
+    boolean active
+    timestamp created_at
+  }
+`);
+document.getElementById('erd').innerHTML = svg;
+document.querySelectorAll('#erd svg.erDiagram .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+document.querySelectorAll('#erd svg.erDiagram .row-rect-odd path, #erd svg.erDiagram .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>

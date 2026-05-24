@@ -1,0 +1,254 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  STAFF
+}
+
+enum OrderStatus {
+  RECEIVED
+  PROCESSING
+  READY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMode {
+  CASH
+  UPI
+  CARD
+  BANK_TRANSFER
+  CHEQUE
+}
+
+enum AcJobStatus {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  DELIVERED
+  CANCELLED
+}
+
+model User {
+  id            String           @id @default(uuid()) @db.Uuid
+  name          String
+  email         String           @unique
+  passwordHash  String
+  role          UserRole
+  active        Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+
+  laundryOrders LaundryOrder[]
+  acJobs        AcJob[]
+  expenses      Expense[]
+  payments      Payment[]
+}
+
+model Customer {
+  id                  String                @id @default(uuid()) @db.Uuid
+  name                String
+  phone               String                @unique
+  notes               String?
+  balancePaise        Int                   @default(0)
+  email               String?             
+  address             String?              
+  gstin               String?   
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  orders              LaundryOrder[]
+  acJobs              AcJob[]
+  balanceTransactions BalanceTransaction[]
+}
+
+model LaundryOrder {
+  id                String        @id @default(uuid()) @db.Uuid
+  invNo             String        @unique
+
+  customerId        String        @db.Uuid
+  createdById       String        @db.Uuid
+
+  orderDate         DateTime
+  deliveryDate      DateTime?
+
+  status            OrderStatus
+  
+  discMode          String        @default("none") // new: "none" | "pct" | "amt"
+  discPct           Int           @default(0)
+  discAmtPaise      Int           @default(0)
+
+  paid              Boolean       @default(false)
+  paidAmountPaise   Int           @default(0)
+
+  notes             String?
+
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  customer          Customer      @relation(fields: [customerId], references: [id])
+  createdBy         User          @relation(fields: [createdById], references: [id])
+
+  orderLines        OrderLine[]
+  payments          Payment[]
+}
+
+model OrderLine {
+  id              String        @id @default(uuid()) @db.Uuid
+
+  orderId         String        @db.Uuid
+  serviceItemId   String        @db.Uuid
+
+  qty             Int
+  ratePaise       Int
+
+  createdAt       DateTime      @default(now())
+
+  order           LaundryOrder  @relation(fields: [orderId], references: [id])
+  serviceItem     ServiceItem   @relation(fields: [serviceItemId], references: [id])
+}
+
+model Service {
+  id            String          @id @default(uuid()) @db.Uuid
+  name          String          @unique
+  gstPct        Int             @default(0)
+  active        Boolean         @default(true)
+
+  createdAt     DateTime        @default(now())
+
+  serviceItems  ServiceItem[]
+}
+
+model Item {
+  id            String          @id @default(uuid()) @db.Uuid
+  name          String
+  unit          String?
+  active        Boolean         @default(true)
+
+  createdAt     DateTime        @default(now())
+
+  serviceItems  ServiceItem[]
+}
+
+model ServiceItem {
+  id            String        @id @default(uuid()) @db.Uuid
+
+  serviceId     String        @db.Uuid
+  itemId        String        @db.Uuid
+
+  ratePaise     Int
+  active        Boolean       @default(true)
+
+  updatedAt     DateTime      @updatedAt
+
+  service       Service       @relation(fields: [serviceId], references: [id])
+  item          Item          @relation(fields: [itemId], references: [id])
+
+  orderLines    OrderLine[]
+
+  @@unique([serviceId, itemId])
+}
+
+model Payment {
+  id              String          @id @default(uuid()) @db.Uuid
+
+  orderId         String?         @db.Uuid
+  acJobId         String?         @db.Uuid
+
+  amountPaise     Int
+
+  mode            PaymentMode
+
+  reference       String?
+
+  paidAt          DateTime        @default(now())
+
+  recordedById    String          @db.Uuid
+
+  order           LaundryOrder?   @relation(fields: [orderId], references: [id])
+  acJob           AcJob?          @relation(fields: [acJobId], references: [id])
+
+  recordedBy      User            @relation(fields: [recordedById], references: [id])
+}
+
+model BalanceTransaction {
+  id              String      @id @default(uuid()) @db.Uuid
+
+  customerId      String      @db.Uuid
+
+  deltaPaise      Int
+
+  reason          String
+
+  referenceId     String?     @db.Uuid
+  referenceType   String?
+
+  createdAt       DateTime    @default(now())
+
+  customer        Customer    @relation(fields: [customerId], references: [id])
+}
+
+model AcJob {
+  id              String          @id @default(uuid()) @db.Uuid
+  invNo           String          @unique
+  customerId      String?         @db.Uuid
+  custName        String
+  custPhone       String
+  custAddress     String?
+  technician      String?
+  category        String?
+  status          AcJobStatus
+  qty             Int
+  ratePaise       Int
+  discPct         Int             @default(0)
+  gstPct          Int             @default(0)
+  paid            Boolean         @default(false)
+  paidAmountPaise Int             @default(0)    // ← ADD THIS
+  createdById     String          @db.Uuid
+  jobDate         DateTime
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  customer        Customer?       @relation(fields: [customerId], references: [id])
+  createdBy       User            @relation(fields: [createdById], references: [id])
+  payments        Payment[]
+}
+
+model InvoiceCounter {
+  prefix    String   @id        // 'IF' or 'AC'
+  value     Int
+  updatedAt DateTime @updatedAt
+}
+
+model Expense {
+  id              String        @id @default(uuid()) @db.Uuid
+
+  expenseDate     DateTime
+
+  category        String
+  dept            String?
+
+  description     String?
+
+  amountPaise     Int
+
+  payMode         PaymentMode
+
+  recordedById    String        @db.Uuid
+
+  createdAt       DateTime      @default(now())
+
+  recordedBy      User          @relation(fields: [recordedById], references: [id])
+}

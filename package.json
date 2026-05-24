@@ -1,0 +1,34 @@
+{
+  "name": "impress-api",
+  "version": "1.0.0",
+  "description": "Impress Fresheners — backend",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "db:seed": "node src/lib/seed.js"
+  },
+  "dependencies": {
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^10.0.0",
+    "@fastify/jwt": "^10.0.0",
+    "@fastify/sensible": "^6.0.4",
+    "@fastify/swagger": "^9.7.0",
+    "@fastify/swagger-ui": "^5.2.6",
+    "@prisma/client": "^6.0.0",
+    "bcrypt": "^5.1.1",
+    "dotenv": "^16.6.1",
+    "fastify": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "prisma": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
