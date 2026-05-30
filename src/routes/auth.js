@@ -36,8 +36,8 @@ const auth = async (fastify) => {
     // Set as HttpOnly cookie (safer than localStorage — JS can't read it)
     reply.setCookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      secure: true,
+      sameSite: 'none',
       path: '/',
       maxAge: 60 * 60 * 2, // 2 hours in seconds
     })
