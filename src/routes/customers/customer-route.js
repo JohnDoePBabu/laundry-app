@@ -28,7 +28,7 @@ export default async function customersRoutes(fastify) {
         orderBy: { name: 'asc' },
       })
 
-      return paiseToRupees(customers)
+      return customers
     }
   )
 
@@ -156,17 +156,8 @@ export default async function customersRoutes(fastify) {
         where: { id },
 
         include: {
-          orders: {
-            where: {
-              status: {
-                notIn: ['DELIVERED', 'CANCELLED'],
-              },
-            },
-
-            select: {
-              id: true,
-            },
-          },
+          orders: { select: { id: true }, take: 1 },
+          acJobs: { select: { id: true }, take: 1 },
         },
       })
 
@@ -174,9 +165,9 @@ export default async function customersRoutes(fastify) {
         return reply.notFound('Customer not found')
       }
 
-      if (customer.orders.length > 0) {
+      if (customer.orders.length > 0 || customer.acJobs.length > 0) {
         return reply.badRequest(
-          `Cannot delete: customer has ${customer.orders.length} open order(s). Close or cancel them first.`
+          'Cannot delete: customer has existing orders or AC jobs. Delete those first.'
         )
       }
 

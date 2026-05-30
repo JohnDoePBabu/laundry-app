@@ -34,8 +34,12 @@ fastify.get('/ping', async () => {
 
 const start = async () => { 
     await fastify.register(cors, {
-      origin: true
-
+      origin: [
+        'https://impress-laundry-ui-production.up.railway.app',
+        'http://localhost:5173',
+        'http://localhost:3000',
+      ],
+      credentials: true,
     });
     fastify.register(routes);
     await fastify.listen({
