@@ -36,6 +36,7 @@ const start = async () => {
     await fastify.register(cors, {
       origin: [
         'https://impress-laundry-ui-production.up.railway.app',
+        'https://impress-fresheners.up.railway.app/',
         'http://localhost:5173',
         'http://localhost:3000',
       ],
