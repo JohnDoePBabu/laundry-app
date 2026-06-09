@@ -26,6 +26,8 @@ export const paiseToRupees = (obj) => {
     if (key.endsWith('Paise') && typeof value === 'number') {
       const newKey = key.replace('Paise', 'Rupees')
       result[newKey] = toRupees(value)
+    } else if (value instanceof Date) {
+      result[key] = value
     } else if (typeof value === 'object' && value !== null) {
       result[key] = paiseToRupees(value)
     } else {
