@@ -37,6 +37,8 @@ const start = async () => {
       origin: [
         'https://impress-laundry-ui-production.up.railway.app',
         'https://impress-fresheners.up.railway.app',
+        'https://impressfresheners.in',
+        'https://www.impressfresheners.in',
         'http://localhost:5173',
         'http://localhost:3000',
       ],
