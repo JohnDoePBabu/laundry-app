@@ -207,7 +207,6 @@ export default async function ordersRoutes(fastify) {
 
       const {
         customerId,
-        createdById,
         orderDate,
         deliveryDate,
         status = 'RECEIVED',
@@ -231,7 +230,7 @@ export default async function ordersRoutes(fastify) {
 
           customerId,
 
-          createdById,
+          createdById: request.user.id,
 
           orderDate: new Date(orderDate),
 
@@ -516,9 +515,9 @@ export default async function ordersRoutes(fastify) {
         amountRupees,
         applyAdvance,
         mode,
-        recordedById,
         paidAt,
       } = request.body
+      const recordedById = request.user.id
 
       const order = await prisma.laundryOrder.findUnique({
 

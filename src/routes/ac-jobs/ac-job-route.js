@@ -186,7 +186,6 @@ export default async function acJobsRoutes(fastify) {
         rateRupees,
         discPct = 0,
         gstPct = 18,
-        createdById,
         jobDate,
         notes,
         customInvNo,
@@ -275,7 +274,7 @@ export default async function acJobsRoutes(fastify) {
           gstPct:
             Number(gstPct),
 
-          createdById,
+          createdById: request.user.id,
 
           jobDate:
             new Date(jobDate),
@@ -303,12 +302,11 @@ export default async function acJobsRoutes(fastify) {
     },
     body: {
       type: 'object',
-      required: ['mode', 'recordedById'],
+      required: ['mode'],
       properties: {
         amountRupees:  { type: 'number', minimum: 0 },
         mode:          { type: 'string' },
         reference:     { type: 'string' },
-        recordedById:  { type: 'string', format: 'uuid' },
         paidAt:        { type: 'string', format: 'date-time' },
       },
     },
@@ -319,9 +317,9 @@ export default async function acJobsRoutes(fastify) {
     amountRupees = 0,
     mode,
     reference,
-    recordedById,
     paidAt,
   } = request.body
+  const recordedById = request.user.id
 
   const job = await fastify.prisma.acJob.findUnique({ where: { id } })
   if (!job) return reply.code(404).send({ error: 'AC job not found' })

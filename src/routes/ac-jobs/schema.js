@@ -227,7 +227,6 @@ export const createAcJobSchema = {
     additionalProperties: false,
 
     required: [
-      'createdById',
       'jobDate',
       'rateRupees',
     ],
@@ -283,11 +282,6 @@ export const createAcJobSchema = {
         type: 'number',
         minimum: 0,
         maximum: 100,
-      },
-
-      createdById: {
-        type: 'string',
-        format: 'uuid',
       },
 
       jobDate: {

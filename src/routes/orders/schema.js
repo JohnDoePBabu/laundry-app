@@ -262,7 +262,6 @@ export const createOrderSchema = {
 
     required: [
       'customerId',
-      'createdById',
       'orderDate',
       'lines',
     ],
@@ -270,11 +269,6 @@ export const createOrderSchema = {
     properties: {
 
       customerId: {
-        type: 'string',
-        format: 'uuid',
-      },
-
-      createdById: {
         type: 'string',
         format: 'uuid',
       },
@@ -453,7 +447,7 @@ export const recordPaymentSchema = {
 
     additionalProperties: false,
 
-    required: ['mode', 'recordedById'],
+    required: ['mode'],
 
     properties: {
 
@@ -468,11 +462,6 @@ export const recordPaymentSchema = {
 
       mode: {
         type: 'string',
-      },
-
-      recordedById: {
-        type: 'string',
-        format: 'uuid',
       },
 
       paidAt: {
