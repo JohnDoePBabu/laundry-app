@@ -1,11 +1,12 @@
 import customerRoutes from './customers/customer-route.js';
-import orderRoutes from './orders/order-route.js'; 
-import itemRoutes from './items/item-route.js'; 
+import orderRoutes from './orders/order-route.js';
+import itemRoutes from './items/item-route.js';
 import expenseRoutes from './expenses/expense-route.js';
 import rateRoutes from './rates/rate-route.js';
 import serviceRoutes from './services/service-route.js';
 import acJobRoutes from './ac-jobs/ac-job-route.js';
 import authRoutes from './auth.js';
+import invoiceCounterRoutes from './invoice-counters/invoice-counter-route.js';
 
 export default async function routes(fastify, options) {
 
@@ -34,6 +35,9 @@ export default async function routes(fastify, options) {
     });
     fastify.register(acJobRoutes, {
         prefix: '/ac-jobs'
+    });
+    fastify.register(invoiceCounterRoutes, {
+        prefix: '/invoice-counters'
     });
   // Register other routes here
   // fastify.register(orderRoutes, { prefix: '/api' });

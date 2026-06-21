@@ -555,20 +555,14 @@ export default async function ordersRoutes(fastify) {
         },
       })
 
-      let subPaise = 0
-      let taxPaise = 0
+      let subPaise  = 0
+      let taxExact  = 0  // accumulate as float, no per-line rounding
 
       for (const line of lines) {
-
         const base = line.ratePaise * line.qty
-
-        const gst = line.serviceItem.service.gstPct
-
-        subPaise += base
-
-        taxPaise += Math.round(
-          base * gst / 100
-        )
+        const gst  = line.serviceItem.service.gstPct
+        subPaise  += base
+        taxExact  += base * gst / 100
       }
 
       const discAmt =
@@ -576,8 +570,13 @@ export default async function ordersRoutes(fastify) {
           ? Math.round(subPaise * order.discPct / 100)
           : order.discAmtPaise
 
-      const totalPaise =
-        subPaise - discAmt + taxPaise
+      const taxable = subPaise - discAmt
+
+      // GST on discounted subtotal (proportional scaling — matches frontend)
+      const taxOnTaxable =
+        subPaise > 0 ? taxExact * (taxable / subPaise) : 0
+
+      const totalPaise = Math.round(taxable + taxOnTaxable)
 
       const alreadyPaidPaise =
         order.paidAmountPaise
@@ -657,10 +656,6 @@ export default async function ordersRoutes(fastify) {
               newPaidAmount,
               totalPaise
             ),
-
-            ...(isPaidFull && {
-              status: 'DELIVERED',
-            }),
           },
         })
 
